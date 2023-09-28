@@ -1,12 +1,15 @@
-import type { ChangeEvent } from 'react';
-
+import type { ChangeEvent,FormEvent } from 'react';
 import { Fragment, useState } from 'react';
-
+import type { CommentAuth } from '../../types/types';
 import { STARS_COUNT } from '../../const';
 
-const Form = () => {
+type FormProps = {
+  onSubmit: (formData: Omit<CommentAuth, 'id'>) => void;
+}
+
+const Form = ({ onSubmit }: FormProps) => {
   const [text, setText] = useState<string>('');
-  const [rating, setRating] = useState<number | null>(null);
+  const [rating, setRating] = useState<number>(0);
 
   const handleTextareaChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setText(e.target.value);
@@ -16,8 +19,17 @@ const Form = () => {
     setRating(Number(e.target.value));
   };
 
+  const handleFormSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    onSubmit({
+      comment: text,
+      rating
+    });
+  };
+
   return (
-    <form action="#" className="add-review__form">
+    <form action="#" className="add-review__form" method="post" onSubmit={handleFormSubmit}>
       <div className="rating">
         <div className="rating__stars">
           {Array.from({ length: STARS_COUNT}, (_, i) => (
@@ -40,7 +52,6 @@ const Form = () => {
       </div>
       <div className="add-review__text">
         <textarea className="add-review__textarea" name="review-text" id="review-text" placeholder="Review text"
-          defaultValue={''}
           value={text}
           onChange={handleTextareaChange}
         />

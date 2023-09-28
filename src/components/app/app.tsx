@@ -1,41 +1,34 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-
-import type { Movie } from '../../types/types';
-
+import { unstable_HistoryRouter as HistoryRouter, Routes, Route } from 'react-router-dom';
 import Main from '../../pages/main/main';
 import Login from '../../pages/login/login';
 import FilmPage from '../../pages/films/film-page';
 import Favorites from '../../pages/my-list/my-list';
 import Player from '../../pages/player/player';
-import Review from '../../pages/review/review';
+import ReviewPage from '../../pages/review/review';
 import NotFound from '../../pages/not-found/not-found';
 import PrivateRoute from '../private-route/private-route';
-// import { AppRoute } from '../../const';
-import { AppRoute, AuthorizationStatus } from '../../const';
+import { AppRoute } from '../../const';
+import history from '../../history';
 
-type AppProps = {
-  films: Movie[];
-}
-
-const App = ({films}: AppProps): JSX.Element => (
-  <BrowserRouter>
+const App = (): JSX.Element => (
+  <HistoryRouter history={history}>
     <Routes>
-      <Route index element = { <Main films = {films}/> } />
+      <Route path = {AppRoute.Root} element = { <Main /> } />
       <Route path = {AppRoute.Login} element = {<Login />} />
-      <Route path = {AppRoute.Player} element = {<Player />} />
+      <Route path = {`${AppRoute.Player}/:id`} element = {<Player />} />
       <Route path = {`${AppRoute.Film}/:id`} element = {<FilmPage />} />
-      <Route path = {`${AppRoute.Film}/:id/review`} element = {<Review />} />
-      <Route path={AppRoute.Mylist}
-        // element = {<Favorites films = {films}/>}
+      <Route path = {`${AppRoute.Film}/:id/review`} element = {<ReviewPage />} />
+      <Route
+        path={AppRoute.Mylist}
         element = {
-          <PrivateRoute authorizationStatus = {AuthorizationStatus.NoAuth}>
-            <Favorites films = {films}/>
+          <PrivateRoute>
+            <Favorites />
           </PrivateRoute>
         }
       />
       <Route path = "*" element = {<NotFound />} />
     </Routes>
-  </BrowserRouter>
+  </HistoryRouter>
 );
 
 export default App;

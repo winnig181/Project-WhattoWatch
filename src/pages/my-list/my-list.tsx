@@ -1,56 +1,50 @@
 import Card from '../../components/card/card';
-import type { Movie } from '../../types/types';
-import { useState } from 'react';
+import Header from '../../components/header/header';
+import { useState, useRef } from 'react';
+import Spinner from '../../components/spinner/spinner';
+import { useAppSelector } from '../../hooks';
+import { getFavoriteFilms, getIsFavoriteFilmsLoading } from '../../store/site-data/selectors';
 
-type FavoritesProps = {
-  films: Movie[];
-}
-const Favorites = ({films}: FavoritesProps ): JSX.Element => {
-  // Переменная activeFilm понадобится позже
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+const Favorites = (): JSX.Element => {
   const [activeFilm, setActiveFilm] = useState<number | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const timeoutRef = useRef<number>(0);
+  const favoriteFilms = useAppSelector(getFavoriteFilms);
+  const isFavoriteFilmsLoading = useAppSelector(getIsFavoriteFilmsLoading);
 
   const handleCardMouseEnter = (id: number) => {
-    setActiveFilm(id);
+    const timeoutId = window.setTimeout( () =>
+    {setActiveFilm(id);
+      setIsPlaying(!isPlaying);
+    },1000 );
+    timeoutRef.current = timeoutId;
   };
 
-  const handleCardMouseLeave = () => {
+  const handleCardMouseLeave = (id:number) => {
     setActiveFilm(null);
+    const timeoutId = timeoutRef.current;
+    setIsPlaying(!isPlaying);
+    clearTimeout(timeoutId);
   };
+
+  if (isFavoriteFilmsLoading) {
+    return <Spinner />;
+  }
 
   return (
     <div className="user-page">
-      <header className="page-header user-page__head">
-        <div className="logo">
-          <a href="main.html" className="logo__link">
-            <span className="logo__letter logo__letter--1">W</span>
-            <span className="logo__letter logo__letter--2">T</span>
-            <span className="logo__letter logo__letter--3">W</span>
-          </a>
-        </div>
-        <h1 className="page-title user-page__title">My list</h1>
-        <ul className="user-block">
-          <li className="user-block__item">
-            <div className="user-block__avatar">
-              <img src="img/avatar.jpg" alt="User avatar" width={63} height={63} />
-            </div>
-          </li>
-          <li className="user-block__item">
-            <a className="user-block__link">Sign out</a>
-          </li>
-        </ul>
-      </header>
+      <Header page = 'user-page'/>
       <section className="catalog">
         <h2 className="catalog__title visually-hidden">Catalog</h2>
         <div className="catalog__films-list">
-          {films.map((film) => (
-            film.isFavorite &&
-          <Card
-            key={film.id}
-            {...film}
-            onMouseEnter={handleCardMouseEnter}
-            onMouseLeave={handleCardMouseLeave}
-          />
+          {favoriteFilms.map((film) => (
+            <Card
+              key={film.id}
+              {...film}
+              isPlaying={film.id === activeFilm}
+              handleCardMouseEnter={()=>handleCardMouseEnter(film.id)}
+              handleCardMouseLeave={()=>handleCardMouseLeave(film.id)}
+            />
           ))}
 
         </div>
